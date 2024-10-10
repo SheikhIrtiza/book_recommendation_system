@@ -10,7 +10,7 @@ from scipy.sparse.linalg import svds
 @st.cache_data
 def load_data():
     book_df = pd.read_csv('Books.csv', engine='python')
-    ratings_df = pd.read_csv('Ratings.csv', engine='python').sample(40000)
+    ratings_df = pd.read_csv('Ratings.csv', engine='python').sample(40)
     user_df = pd.read_csv('Users.csv', engine='python')
     return book_df, ratings_df, user_df
 
