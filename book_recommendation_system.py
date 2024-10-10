@@ -74,16 +74,21 @@ def visualize_user_book_matrix_altair(matrix):
 
     st.altair_chart(chart)
 
-
 # Streamlit UI
 st.sidebar.title('Navigation')
 page = st.sidebar.radio('Go to', ['Home', 'Recommendations', 'Matrix Heatmap'])
 
 if page == 'Home':
-    # Center the logo image at the top
-    st.markdown("<div class='center-content'>", unsafe_allow_html=True)
-    st.image('header_image.jpeg', width=150, caption="Book Recommendation System Logo")
-    st.markdown("</div>", unsafe_allow_html=True)
+    #
+    st.markdown(
+        """
+        <div class='center-content'>
+            <img src='https://th.bing.com/th/id/OIP.EnOy3-5IcV9Zi9yJRYdATgAAAA?rs=1&pid=ImgDetMain' alt='Logo' width='400px' style="border-radius: 10px;">
+        </div>
+        """, 
+        unsafe_allow_html=True
+    )
+
 
     # Floating, multi-colored message
     st.markdown("""
@@ -125,7 +130,7 @@ elif page == 'Matrix Heatmap':
     if st.button('Show Heatmap', key='heatmap_button'):
         visualize_user_book_matrix_altair(user_book_matrix)
 
-# Custom CSS for styling with colors and floating text
+# Custom CSS for styling with yellow and black combination
 st.markdown(
     """
     <style>
@@ -143,7 +148,7 @@ st.markdown(
     }
     .floating-text {
         animation: float 3s ease-in-out infinite;
-        background-image: linear-gradient(45deg, #ff4b4b, #ffb74d, #64b5f6);
+        background-image: linear-gradient(45deg, yellow, black);
         -webkit-background-clip: text;
         color: transparent;
         font-size: 24px;
@@ -162,23 +167,27 @@ st.markdown(
         }
     }
     h1 {
-        color: #3a7bd5;
+        color: black;
     }
     button[data-testid="recommend_button"] {
-        background-color: #4CAF50;
-        color: white;
+        background-color: yellow;
+        color: black;
         border: none;
         padding: 10px 20px;
         border-radius: 4px;
         cursor: pointer;
     }
     button[data-testid="heatmap_button"] {
-        background-color: #008CBA;
-        color: white;
+        background-color: yellow;
+        color: black;
         border: none;
         padding: 10px 20px;
         border-radius: 4px;
         cursor: pointer;
+    }
+    button:hover {
+        background-color: black;
+        color: yellow;
     }
     </style>
     """,
