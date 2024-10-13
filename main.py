@@ -1,5 +1,5 @@
 import streamlit as st
-from book_recommendation_system import *
+from utils import *
 
 # Streamlit UI Navigation
 st.sidebar.title('Navigation')
