@@ -1,66 +1,63 @@
+# main.py
 import streamlit as st
+import pandas as pd
 from utils import *
 
-# Streamlit UI Navigation
+# Streamlit UI
 st.sidebar.title('Navigation')
-page = st.sidebar.radio('Go to', ['Home', 'Recommendations', 'Matrix Heatmap'])
+page = st.sidebar.radio('Go to', ['Home', 'Recommendations'])
 
-# Home Page
+# Add a header image
+st.markdown(
+    """
+    <div style="text-align: center;">
+        <img src="https://th.bing.com/th/id/OIP.EnOy3-5IcV9Zi9yJRYdATgAAAA?rs=1&pid=ImgDetMain" alt="Header Image" style="width:50%; border-radius: 10px;">
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
 if page == 'Home':
+    st.title('Book Recommendation System')
     st.markdown(
         """
-        <div class='center-content'>
-            <img src='https://th.bing.com/th/id/OIP.EnOy3-5IcV9Zi9yJRYdATgAAAA?rs=1&pid=ImgDetMain' alt='Logo' width='400px' style="border-radius: 10px;">
-        </div>
-        """, 
-        unsafe_allow_html=True
-    )
-
-    # Welcome message with floating effect
-    st.markdown("""
         <div class="floating-text">
             <h3>Welcome to the Book Recommendation System! Use the sidebar to navigate.</h3>
         </div>
-        """, unsafe_allow_html=True)
+        """,
+        unsafe_allow_html=True
+    )
 
-# Recommendations Page
 elif page == 'Recommendations':
-    st.title('📖 Book Recommendations')
-    
-    # Load and process data
+    st.title('Book Recommendations')
+    # Load data
     book_df, ratings_df, user_df = load_data()
-    if book_df is not None:
-        book_user_rating, user_book_matrix = preprocess_data(book_df, ratings_df, user_df)
-        all_user_predicted_ratings, Vt = compute_svd(user_book_matrix)
 
-        # Input for book selection
-        book_id = st.number_input('Enter the unique ID of a book to get recommendations:', min_value=0, max_value=len(book_user_rating['unique_book_id'].unique()) - 1)
-        top_n = st.number_input('Number of recommendations to show:', min_value=1, max_value=10, value=3)
+    # Preprocess data
+    book_user_rating, user_book_matrix = preprocess_data(book_df, ratings_df, user_df)
 
-        # Generate recommendations
-        if st.button('📚 Get Recommendations', key='recommend_button'):
-            top_indexes = top_cosine_similarity(Vt.T[:, :50], book_id, top_n)
-            recommendations = similar_books(book_user_rating, book_id, top_indexes)
-            st.write(pd.DataFrame(recommendations))
-    else:
-        st.error("Failed to load data. Please check your data sources.")
+    # Compute SVD
+    all_user_predicted_ratings, Vt = compute_svd(user_book_matrix)
 
-# Matrix Heatmap Page
-elif page == 'Matrix Heatmap':
-    st.title('🗺️ User-Book Matrix Heatmap')
-    
-    # Load and process data
-    book_df, ratings_df, user_df = load_data()
-    if book_df is not None:
-        book_user_rating, user_book_matrix = preprocess_data(book_df, ratings_df, user_df)
+    # User input for book selection
+    book_id = st.number_input('Enter the unique ID of a book to get recommendations:', min_value=0, max_value=len(book_user_rating['unique_id_book'].unique()) - 1)
+    top_n = st.number_input('Number of recommendations to show:', min_value=1, max_value=10, value=3)
 
-        # Show heatmap on button click
-        if st.button('Show Heatmap', key='heatmap_button'):
-            visualize_user_book_matrix_altair(user_book_matrix)
-    else:
-        st.error("Failed to load data. Please check your data sources.")
+    if st.button('Get Recommendations', key='recommend_button'):
+        top_indexes = top_cosine_similarity(Vt.T[:, :50], book_id, top_n)
+        recommendations = similar_books(book_user_rating, book_id, top_indexes)
+        
+        # Display recommendations in a table
+        st.write(pd.DataFrame(recommendations))
+        
+        # Show heatmap of the user-book matrix
+        st.markdown('### User-Book Matrix Heatmap')
+        st.write('Here’s a sample of the user-book rating matrix heatmap based on the current dataset:')
+        
+        # Visualize the matrix as a heatmap
+        st.altair_chart(visualize_user_book_matrix_altair(user_book_matrix))
 
-# Custom CSS for styling
+# Custom CSS for styling with yellow and black combination
 st.markdown(
     """
     <style>
@@ -99,8 +96,7 @@ st.markdown(
     h1 {
         color: black;
     }
-    button[data-testid="recommend_button"],
-    button[data-testid="heatmap_button"] {
+    button[data-testid="recommend_button"] {
         background-color: yellow;
         color: black;
         border: none;
@@ -117,8 +113,10 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Sidebar Feedback Section
+# Feedback section
 st.sidebar.title('Feedback')
 feedback = st.sidebar.text_area('Your feedback:')
 if st.sidebar.button('Submit'):
+    with open('feedback.txt', 'a') as f:
+        f.write(feedback + '\n')
     st.sidebar.write('Thank you for your feedback!')
