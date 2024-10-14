@@ -1,7 +1,6 @@
-# main.py
 import streamlit as st
 import pandas as pd
-from utils import *
+from utils import load_data, preprocess_data, compute_svd, top_cosine_similarity, similar_books, visualize_user_book_matrix, visualize_user_book_matrix_altair, seaborn_plot, save_feedback, plot_recommendations
 
 # Streamlit UI
 st.sidebar.title('Navigation')
@@ -56,6 +55,16 @@ elif page == 'Recommendations':
         
         # Visualize the matrix as a heatmap
         st.altair_chart(visualize_user_book_matrix_altair(user_book_matrix))
+
+        # Show Seaborn plot
+        st.markdown('### Distribution of Book Ratings')
+        seaborn_fig = seaborn_plot(book_user_rating)
+        st.pyplot(seaborn_fig)
+
+        # Show bar chart for recommendations
+        st.markdown('### Original Book and Similar Books')
+        recommendation_fig = plot_recommendations(recommendations)
+        st.pyplot(recommendation_fig)
 
 # Custom CSS for styling with yellow and black combination
 st.markdown(
@@ -117,6 +126,5 @@ st.markdown(
 st.sidebar.title('Feedback')
 feedback = st.sidebar.text_area('Your feedback:')
 if st.sidebar.button('Submit'):
-    with open('feedback.txt', 'a') as f:
-        f.write(feedback + '\n')
+    save_feedback(feedback)
     st.sidebar.write('Thank you for your feedback!')

@@ -1,7 +1,8 @@
-# utils.py
 import numpy as np
 import pandas as pd
 from scipy.sparse.linalg import svds
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 # Load the datasets with the 'python' engine
 def load_data():
@@ -48,8 +49,6 @@ def similar_books(book_user_rating, book_id, top_indexes):
     return recommendations
 
 def visualize_user_book_matrix(matrix):
-    import matplotlib.pyplot as plt
-    import seaborn as sns
     plt.figure(figsize=(10, 7))
     sns.heatmap(matrix[:10, :10], cmap='YlGnBu', annot=False)
     plt.title('Sample of User-Book Rating Matrix')
@@ -72,3 +71,26 @@ def visualize_user_book_matrix_altair(matrix):
     )
 
     return chart
+
+def seaborn_plot(book_user_rating):
+    plt.figure(figsize=(10, 6))
+    sns.countplot(data=book_user_rating, x='Book-Rating', palette='viridis')
+    plt.title('Distribution of Book Ratings')
+    plt.xlabel('Book Rating')
+    plt.ylabel('Count')
+    return plt
+
+def save_feedback(feedback):
+    with open('feedback.txt', 'a') as f:
+        f.write(feedback + '\n')
+
+def plot_recommendations(recommendations):
+    plt.figure(figsize=(10, 6))
+    book_titles = [rec['Book Title'] for rec in recommendations]
+    recommendation_types = [rec['Recommendation'] for rec in recommendations]
+    sns.barplot(x=book_titles, y=[1]*len(book_titles), hue=recommendation_types, dodge=False)
+    plt.title('Original Book and Similar Books')
+    plt.xlabel('Book Titles')
+    plt.ylabel('Recommendation Type')
+    plt.xticks(rotation=45, ha='right')
+    return plt
