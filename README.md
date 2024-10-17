@@ -18,15 +18,15 @@ Feedback: Users can submit feedback via the sidebar.
 
 *Clone the repository and install the required dependencies:*
 
-git clone (repo url)
+1. git clone (repo url)
 
-pip install -r requirements.txt
+2. pip install -r requirements.txt
 
 Place the datasets (Books.csv, Ratings.csv, Users.csv) in the root directory.
 
 Run the Streamlit app:
 
-**streamlit run main.py**
+3. **streamlit run main.py**
 
 Files
 
