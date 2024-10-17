@@ -17,7 +17,7 @@ Feedback: Users can submit feedback via the sidebar.
 **Setup Instructions**
 
 *Clone the repository and install the required dependencies:*
-git clone <repo url>
+git clone (repo url)
 
 pip install -r requirements.txt
 
