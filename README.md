@@ -17,6 +17,7 @@ Feedback: Users can submit feedback via the sidebar.
 **Setup Instructions**
 
 *Clone the repository and install the required dependencies:*
+
 git clone (repo url)
 
 pip install -r requirements.txt
@@ -28,18 +29,33 @@ Run the Streamlit app:
 **streamlit run main.py**
 
 Files
+
 main.py: Main Streamlit app that loads data, generates recommendations, and displays visualizations.
+
 utils.py: Helper functions for loading data, computing SVD, and generating visualizations.
+
 Data Sources
+
 Books.csv: Contains book details.
+
 Ratings.csv: Contains user-book ratings.
+
 Users.csv: Contains user data.
+
 Key Functions in utils.py
+
 load_data(): Loads book, user, and rating data.
+
 preprocess_data(): Prepares the user-book matrix.
+
 compute_svd(): Applies SVD to the user-book matrix.
+
 similar_books(): Finds books similar to the selected one.
+
 visualize_user_book_matrix_altair(): Displays a heatmap using Altair.
+
 seaborn_plot(): Plots the distribution of book ratings.
-Feedback
+
+**Feedback**
+
 User feedback is saved locally in feedback.txt
