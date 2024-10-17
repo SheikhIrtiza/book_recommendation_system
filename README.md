@@ -21,7 +21,7 @@ To set up the Book Recommendation System, follow these steps:
 1. Install Requirements
 Install the required Python packages by running the following command in your terminal:
 
-pip install -r requirements.txt
+        pip install -r requirements.txt
 
 3. Run the Service
 Start the Streamlit service using the following command:
