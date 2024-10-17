@@ -26,7 +26,7 @@ pip install -r requirements.txt
 3. Run the Service
 Start the Streamlit service using the following command:
 
-streamlit run main.py
+        streamlit run main.py
 The service will be accessible at http://localhost:8501.
 
 Customizable Interface
