@@ -88,9 +88,14 @@ def plot_recommendations(recommendations):
     plt.figure(figsize=(10, 6))
     book_titles = [rec['Book Title'] for rec in recommendations]
     recommendation_types = [rec['Recommendation'] for rec in recommendations]
-    sns.barplot(x=book_titles, y=[1]*len(book_titles), hue=recommendation_types, dodge=False)
+    sns.barplot(x=book_titles, y=[1]*len(book_titles), hue=recommendation_types)
     plt.title('Original Book and Similar Books')
-    plt.xlabel('Book Titles')
-    plt.ylabel('Recommendation Type')
-    plt.xticks(rotation=45, ha='right')
     return plt
+
+def get_book_image_url(book_df, book_title):
+    url = book_df.loc[book_df['Book-Title'] == book_title, 'Image-URL-L'].values[0]
+    return url if url else None
+
+
+
+

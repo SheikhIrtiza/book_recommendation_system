@@ -1,10 +1,10 @@
 import streamlit as st
 import pandas as pd
-from utils import load_data, preprocess_data, compute_svd, top_cosine_similarity, similar_books, visualize_user_book_matrix, visualize_user_book_matrix_altair, seaborn_plot, save_feedback, plot_recommendations
+from utils import load_data, preprocess_data, compute_svd, top_cosine_similarity, similar_books, visualize_user_book_matrix, visualize_user_book_matrix_altair, seaborn_plot, save_feedback, plot_recommendations, get_book_image_url
 
 # Streamlit UI
 st.sidebar.title('Navigation')
-page = st.sidebar.radio('Go to', ['Home', 'Recommendations'])
+page = st.sidebar.radio('Go to', ['Home', 'Recommendations'], key='navigation_radio')
 
 # Add a header image
 st.markdown(
@@ -29,30 +29,53 @@ if page == 'Home':
 
 elif page == 'Recommendations':
     st.title('Book Recommendations')
+
     # Load data
     book_df, ratings_df, user_df = load_data()
-
     # Preprocess data
     book_user_rating, user_book_matrix = preprocess_data(book_df, ratings_df, user_df)
-
     # Compute SVD
     all_user_predicted_ratings, Vt = compute_svd(user_book_matrix)
 
-    # User input for book selection
-    book_id = st.number_input('Enter the unique ID of a book to get recommendations:', min_value=0, max_value=len(book_user_rating['unique_id_book'].unique()) - 1)
-    top_n = st.number_input('Number of recommendations to show:', min_value=1, max_value=10, value=3)
+    # User input for book selection by title
+    book_title = st.selectbox('Select a book title:', book_user_rating['Book-Title'].unique(), key='book_title_select')
+
+    # Fetch book image for the selected book
+    book_image_url = get_book_image_url(book_df, book_title)
+
+    # Display selected book image
+    if book_image_url:
+        st.image(book_image_url, caption=book_title, width=150)
+
+    top_n = st.number_input('Number of recommendations to show:', min_value=1, max_value=10, value=3, key='top_n_input')
 
     if st.button('Get Recommendations', key='recommend_button'):
+        # Find book ID based on the selected title
+        book_id = book_user_rating[book_user_rating['Book-Title'] == book_title]['unique_id_book'].values[0]
+
+        # Get recommendations
         top_indexes = top_cosine_similarity(Vt.T[:, :50], book_id, top_n)
         recommendations = similar_books(book_user_rating, book_id, top_indexes)
-        
-        # Display recommendations in a table
-        st.write(pd.DataFrame(recommendations))
-        
+
+        # Display recommendations with book images in rows
+        st.markdown('### Recommended Books:')
+        num_books = len(recommendations)
+        # Adjust row layout based on number of recommendations
+        num_cols = 2 if num_books > 1 else 1  # 2 books per row
+        cols = st.columns(num_cols)
+        for i, rec in enumerate(recommendations):
+            col = cols[i % num_cols]  # Distribute books across columns
+            recommended_book_title = rec['Book Title']
+            recommended_book_image_url = get_book_image_url(book_df, recommended_book_title)
+            with col:
+                if recommended_book_image_url:
+                    st.image(recommended_book_image_url, caption=recommended_book_title, width=150)
+                else:
+                    st.write(recommended_book_title)
+
         # Show heatmap of the user-book matrix
         st.markdown('### User-Book Matrix Heatmap')
         st.write('Here’s a sample of the user-book rating matrix heatmap based on the current dataset:')
-        
         # Visualize the matrix as a heatmap
         st.altair_chart(visualize_user_book_matrix_altair(user_book_matrix))
 
@@ -124,7 +147,7 @@ st.markdown(
 
 # Feedback section
 st.sidebar.title('Feedback')
-feedback = st.sidebar.text_area('Your feedback:')
-if st.sidebar.button('Submit'):
+feedback = st.sidebar.text_area('Your feedback:', key='feedback_textarea')
+if st.sidebar.button('Submit', key='feedback_submit'):
     save_feedback(feedback)
     st.sidebar.write('Thank you for your feedback!')

@@ -7,14 +7,14 @@ import seaborn as sns
 # Load the datasets with the 'python' engine
 def load_data():
     book_df = pd.read_csv('Books.csv', engine='python')
-    ratings_df = pd.read_csv('Ratings.csv', engine='python').sample(4000)
+    ratings_df = pd.read_csv('Ratings.csv', engine='python').sample(4000) # 40000 
     user_df = pd.read_csv('Users.csv', engine='python')
     return book_df, ratings_df, user_df
 
 def preprocess_data(book_df, ratings_df, user_df):
     user_rating_df = ratings_df.merge(user_df, on='User-ID', how='inner')
     book_user_rating = book_df.merge(user_rating_df, on='ISBN', how='inner')
-    book_user_rating = book_user_rating[['ISBN', 'Book-Title', 'Book-Author', 'Year-Of-Publication', 'Publisher', 'User-ID', 'Book-Rating']]
+    book_user_rating = book_user_rating[['ISBN', 'Book-Title', 'Book-Author', 'User-ID', 'Book-Rating']]
     book_user_rating.reset_index(drop=True, inplace=True)
     
     unique_books_dict = {isbn: i for i, isbn in enumerate(book_user_rating.ISBN.unique())}
@@ -39,35 +39,13 @@ def top_cosine_similarity(data, book_id, top_n=10):
     sort_indexes = np.argsort(-similarity)
     return sort_indexes[:top_n]
 
-def similar_books(book_user_rating, book_id, top_indexes, authors=[], years=[], publishers=[]):
+def similar_books(book_user_rating, book_id, top_indexes):
     recommendations = []
-    original_book = book_user_rating[book_user_rating.unique_id_book == book_id].iloc[0]
-    
-    # Add original book details
-    recommendations.append({
-        'Book Title': original_book['Book-Title'],
-        'Author': original_book['Book-Author'],
-        'Year': original_book['Year-Of-Publication'],
-        'Publisher': original_book['Publisher'],
-        'Recommendation': 'Original Book'
-    })
-    
+    book_title = book_user_rating[book_user_rating.unique_id_book == book_id]["Book-Title"].values[0]
+    recommendations.append({'Book Title': book_title, 'Recommendation': 'Original Book'})
     for id in top_indexes + 1:
-        recommended_book = book_user_rating[book_user_rating.unique_id_book == id].iloc[0]
-
-        # Check if book matches selected filters (authors, years, publishers)
-        if (not authors or recommended_book['Book-Author'] in authors) and \
-           (not years or recommended_book['Year-Of-Publication'] in years) and \
-           (not publishers or recommended_book['Publisher'] in publishers):
-            recommendation = {
-                'Book Title': recommended_book['Book-Title'],
-                'Author': recommended_book['Book-Author'],
-                'Year': recommended_book['Year-Of-Publication'],
-                'Publisher': recommended_book['Publisher'],
-                'Recommendation': 'Similar Book'
-            }
-            recommendations.append(recommendation)
-    
+        recommended_title = book_user_rating[book_user_rating.unique_id_book == id]['Book-Title'].values[0]
+        recommendations.append({'Book Title': recommended_title, 'Recommendation': 'Similar Book'})
     return recommendations
 
 def visualize_user_book_matrix(matrix):
@@ -85,32 +63,39 @@ def visualize_user_book_matrix_altair(matrix):
     chart = alt.Chart(df).mark_rect().encode(
         x='Book:O',
         y='User:O',
-        color=alt.Color('Rating:Q', scale=alt.Scale(scheme='blues')),
-        tooltip=['User', 'Book', 'Rating']
+        color='Rating:Q'
     ).properties(
-        width=400,
-        height=400
+        width=600,
+        height=400,
+        title='Sample of User-Book Rating Matrix'
     )
-    
+
     return chart
 
 def seaborn_plot(book_user_rating):
-    plt.figure(figsize=(8, 6))
-    sns.countplot(data=book_user_rating, x='Book-Rating', palette='Blues')
+    plt.figure(figsize=(10, 6))
+    sns.countplot(data=book_user_rating, x='Book-Rating', palette='viridis')
     plt.title('Distribution of Book Ratings')
-    return plt
-
-def plot_recommendations(recommendations):
-    plt.figure(figsize=(8, 6))
-    labels = [r['Book Title'] for r in recommendations]
-    values = [i for i in range(len(recommendations))]
-
-    plt.barh(labels, values, color='skyblue')
-    plt.title('Recommended Books')
-    plt.xlabel('Score')
-    plt.ylabel('Books')
+    plt.xlabel('Book Rating')
+    plt.ylabel('Count')
     return plt
 
 def save_feedback(feedback):
     with open('feedback.txt', 'a') as f:
         f.write(feedback + '\n')
+
+def plot_recommendations(recommendations):
+    plt.figure(figsize=(10, 6))
+    book_titles = [rec['Book Title'] for rec in recommendations]
+    recommendation_types = [rec['Recommendation'] for rec in recommendations]
+    sns.barplot(x=book_titles, y=[1]*len(book_titles), hue=recommendation_types)
+    plt.title('Original Book and Similar Books')
+    return plt
+
+def get_book_image_url(book_df, book_title):
+    url = book_df.loc[book_df['Book-Title'] == book_title, 'Image-URL-L'].values[0]
+    return url if url else None
+
+
+
+
