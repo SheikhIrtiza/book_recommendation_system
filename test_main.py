@@ -1,8 +1,6 @@
-
-
 import streamlit as st
 import pandas as pd
-from test_utils import load_data, preprocess_data, compute_svd, top_cosine_similarity, similar_books, visualize_user_book_matrix, visualize_user_book_matrix_altair, seaborn_plot, save_feedback, plot_recommendations, get_book_image_url
+from test_utils import load_data, preprocess_data, compute_svd, top_cosine_similarity, similar_books, seaborn_plot, save_feedback, get_book_image_url
 
 # Streamlit UI
 st.sidebar.title('Navigation')
@@ -49,47 +47,36 @@ elif page == 'Recommendations':
     if book_image_url:
         st.image(book_image_url, caption=book_title, width=150)
 
-    top_n = st.number_input('Number of recommendations to show:', min_value=1, max_value=10, value=3, key='top_n_input')
+    # Automatically show 5 recommendations (skipping the input and button)
+    top_n = 5  # Default value of 5 recommendations
 
-    if st.button('Get Recommendations', key='recommend_button'):
-        # Find book ID based on the selected title
-        book_id = book_user_rating[book_user_rating['Book-Title'] == book_title]['unique_id_book'].values[0]
+    # Find book ID based on the selected title
+    book_id = book_user_rating[book_user_rating['Book-Title'] == book_title]['unique_id_book'].values[0]
 
-        # Get recommendations
-        top_indexes = top_cosine_similarity(Vt.T[:, :50], book_id, top_n)
-        recommendations = similar_books(book_user_rating, book_id, top_indexes)
+    # Get recommendations
+    top_indexes = top_cosine_similarity(Vt.T[:, :50], book_id, top_n)
+    recommendations = similar_books(book_user_rating, book_id, top_indexes)
 
-        # Display recommendations with book images in rows
-        st.markdown('### Recommended Books:')
-        num_books = len(recommendations)
-        # Adjust row layout based on number of recommendations
-        num_cols = 2 if num_books > 1 else 1  # 2 books per row
-        cols = st.columns(num_cols)
-        for i, rec in enumerate(recommendations):
-            col = cols[i % num_cols]  # Distribute books across columns
-            recommended_book_title = rec['Book Title']
-            recommended_book_image_url = get_book_image_url(book_df, recommended_book_title)
-            with col:
-                if recommended_book_image_url:
-                    st.image(recommended_book_image_url, caption=recommended_book_title, width=150)
-                else:
-                    st.write(recommended_book_title)
+    # Display recommendations with book images in rows
+    st.markdown('### Recommended Books:')
+    num_books = len(recommendations)
+    # Adjust row layout based on number of recommendations
+    num_cols = 2 if num_books > 1 else 1  # 2 books per row
+    cols = st.columns(num_cols)
+    for i, rec in enumerate(recommendations):
+        col = cols[i % num_cols]  # Distribute books across columns
+        recommended_book_title = rec['Book Title']
+        recommended_book_image_url = get_book_image_url(book_df, recommended_book_title)
+        with col:
+            if recommended_book_image_url:
+                st.image(recommended_book_image_url, caption=recommended_book_title, width=150)
+            else:
+                st.write(recommended_book_title)
 
-        # Show heatmap of the user-book matrix
-        st.markdown('### User-Book Matrix Heatmap')
-        st.write('Here’s a sample of the user-book rating matrix heatmap based on the current dataset:')
-        # Visualize the matrix as a heatmap
-        st.altair_chart(visualize_user_book_matrix_altair(user_book_matrix))
-
-        # Show Seaborn plot
-        st.markdown('### Distribution of Book Ratings')
-        seaborn_fig = seaborn_plot(book_user_rating)
-        st.pyplot(seaborn_fig)
-
-        # Show bar chart for recommendations
-        st.markdown('### Original Book and Similar Books')
-        recommendation_fig = plot_recommendations(recommendations)
-        st.pyplot(recommendation_fig)
+    # Show Seaborn plot
+    st.markdown('### Distribution of Book Ratings')
+    seaborn_fig = seaborn_plot(book_user_rating, recommendations)
+    st.pyplot(seaborn_fig)
 
 # Custom CSS for styling with yellow and black combination
 st.markdown(
@@ -129,18 +116,6 @@ st.markdown(
     }
     h1 {
         color: black;
-    }
-    button[data-testid="recommend_button"] {
-        background-color: yellow;
-        color: black;
-        border: none;
-        padding: 10px 20px;
-        border-radius: 4px;
-        cursor: pointer;
-    }
-    button:hover {
-        background-color: black;
-        color: yellow;
     }
     </style>
     """,

@@ -72,12 +72,29 @@ def visualize_user_book_matrix_altair(matrix):
 
     return chart
 
-def seaborn_plot(book_user_rating):
-    plt.figure(figsize=(10, 6))
-    sns.countplot(data=book_user_rating, x='Book-Rating', palette='viridis')
-    plt.title('Distribution of Book Ratings')
-    plt.xlabel('Book Rating')
-    plt.ylabel('Count')
+def seaborn_plot(book_user_rating, recommendations):
+    # Filter book_user_rating for only the recommended books
+    recommended_titles = [rec['Book Title'] for rec in recommendations]
+    recommended_books_ratings = book_user_rating[book_user_rating['Book-Title'].isin(recommended_titles)]
+
+    # Create a new column to identify recommended books
+    recommended_books_ratings['Recommended Book'] = recommended_books_ratings['Book-Title']
+
+    # Create the Seaborn plot
+    plt.figure(figsize=(12, 6))  # Adjust size for more space
+    sns.countplot(data=recommended_books_ratings, x='Recommended Book', hue='Book-Rating', palette='viridis')
+
+    # Add title and labels
+    plt.title('Distribution of Ratings for Recommended Books')
+    plt.xlabel('Recommended Book')
+    plt.ylabel('Count of Ratings')
+
+    # Rotate x-axis labels for readability
+    plt.xticks(rotation=45, ha='right')  # Rotate and align right to avoid jumbled text
+    ax = plt.gca()
+    for p in ax.patches:
+        ax.annotate(f'{int(p.get_height())}', (p.get_x() + p.get_width() / 2., p.get_height()), ha='center', va='baseline')
+
     return plt
 
 def save_feedback(feedback):
