@@ -41,36 +41,11 @@ def top_cosine_similarity(data, book_id, top_n=10):
 
 def similar_books(book_user_rating, book_id, top_indexes):
     recommendations = []
-    book_title = book_user_rating[book_user_rating.unique_id_book == book_id]["Book-Title"].values[0]
-    recommendations.append({'Book Title': book_title, 'Recommendation': 'Original Book'})
-    for id in top_indexes + 1:
-        recommended_title = book_user_rating[book_user_rating.unique_id_book == id]['Book-Title'].values[0]
-        recommendations.append({'Book Title': recommended_title, 'Recommendation': 'Similar Book'})
+    for id in top_indexes:
+        if id != book_id:  # Skip the selected book
+            recommended_title = book_user_rating[book_user_rating['unique_id_book'] == id]['Book-Title'].values[0]
+            recommendations.append({'Book Title': recommended_title, 'Recommendation': 'Similar Book'})
     return recommendations
-
-def visualize_user_book_matrix(matrix):
-    plt.figure(figsize=(10, 7))
-    sns.heatmap(matrix[:10, :10], cmap='YlGnBu', annot=False)
-    plt.title('Sample of User-Book Rating Matrix')
-    return plt
-
-def visualize_user_book_matrix_altair(matrix):
-    import altair as alt
-    df = pd.DataFrame(matrix[:10, :10], columns=[f'Book {i}' for i in range(10)])
-    df['User'] = [f'User {i}' for i in range(10)]
-    df = df.melt('User', var_name='Book', value_name='Rating')
-
-    chart = alt.Chart(df).mark_rect().encode(
-        x='Book:O',
-        y='User:O',
-        color='Rating:Q'
-    ).properties(
-        width=600,
-        height=400,
-        title='Sample of User-Book Rating Matrix'
-    )
-
-    return chart
 
 def seaborn_plot(book_user_rating, recommendations):
     # Filter book_user_rating for only the recommended books
@@ -94,20 +69,11 @@ def seaborn_plot(book_user_rating, recommendations):
     ax = plt.gca()
     for p in ax.patches:
         ax.annotate(f'{int(p.get_height())}', (p.get_x() + p.get_width() / 2., p.get_height()), ha='center', va='baseline')
-
     return plt
 
 def save_feedback(feedback):
     with open('feedback.txt', 'a') as f:
         f.write(feedback + '\n')
-
-def plot_recommendations(recommendations):
-    plt.figure(figsize=(10, 6))
-    book_titles = [rec['Book Title'] for rec in recommendations]
-    recommendation_types = [rec['Recommendation'] for rec in recommendations]
-    sns.barplot(x=book_titles, y=[1]*len(book_titles), hue=recommendation_types)
-    plt.title('Original Book and Similar Books')
-    return plt
 
 def get_book_image_url(book_df, book_title):
     url = book_df.loc[book_df['Book-Title'] == book_title, 'Image-URL-L'].values[0]
