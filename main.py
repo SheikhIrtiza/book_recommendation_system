@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from test_utils import load_data, preprocess_data, compute_svd, top_cosine_similarity, similar_books, seaborn_plot, save_feedback, get_book_image_url
+from utils import load_data, preprocess_data, compute_svd, top_cosine_similarity, similar_books, seaborn_plot, save_feedback, get_book_image_url
 
 # Streamlit UI
 st.sidebar.title('Navigation')

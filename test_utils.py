@@ -4,10 +4,9 @@ from scipy.sparse.linalg import svds
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# Load the datasets with the 'python' engine
 def load_data():
     book_df = pd.read_csv('Books.csv', engine='python')
-    ratings_df = pd.read_csv('Ratings.csv', engine='python').sample(4000) # 40000 
+    ratings_df = pd.read_csv('Ratings.csv', engine='python').sample(4000, random_state=42)
     user_df = pd.read_csv('Users.csv', engine='python')
     return book_df, ratings_df, user_df
 
@@ -16,12 +15,9 @@ def preprocess_data(book_df, ratings_df, user_df):
     book_user_rating = book_df.merge(user_rating_df, on='ISBN', how='inner')
     book_user_rating = book_user_rating[['ISBN', 'Book-Title', 'Book-Author', 'User-ID', 'Book-Rating']]
     book_user_rating.reset_index(drop=True, inplace=True)
-    
     unique_books_dict = {isbn: i for i, isbn in enumerate(book_user_rating.ISBN.unique())}
     book_user_rating['unique_id_book'] = book_user_rating['ISBN'].map(unique_books_dict)
-    
     user_book_matrix_df = book_user_rating.pivot(index='User-ID', columns='unique_id_book', values='Book-Rating').fillna(0)
-    
     return book_user_rating, user_book_matrix_df.values
 
 def compute_svd(user_book_matrix):
