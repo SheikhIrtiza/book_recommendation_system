@@ -39,10 +39,26 @@ elif page == 'Recommendations':
 
     # Create a form to prevent automatic refresh
     with st.form(key='book_selection_form'):
-        book_title = st.selectbox('Select a book title:', book_user_rating['Book-Title'].unique(), key='book_title_select')
+        # Store the initially selected book in session state to avoid overwriting
+        if 'selected_book' not in st.session_state:
+            st.session_state['selected_book'] = ''
+        
+        book_title = st.selectbox(
+            'Select a book title:',
+            book_user_rating['Book-Title'].unique(),
+            key='book_title_select'
+        )
+
         submit_button = st.form_submit_button(label='Get Recommendations')
 
-    if submit_button:
+        # Update the session state only when the form is submitted
+        if submit_button:
+            st.session_state['selected_book'] = book_title
+
+    # Now, use st.session_state['selected_book'] to generate recommendations
+    if st.session_state['selected_book']:
+        book_title = st.session_state['selected_book']
+
         # Fetch book image for the selected book
         book_image_url = get_book_image_url(book_df, book_title)
 
@@ -88,6 +104,7 @@ elif page == 'Recommendations':
         st.markdown('### Distribution of Book Ratings')
         seaborn_fig = seaborn_plot(book_user_rating, recommendations)
         st.pyplot(seaborn_fig)
+
 
 
 # Custom CSS for styling with yellow and black combination
@@ -140,4 +157,3 @@ feedback = st.sidebar.text_area('Your feedback:', key='feedback_textarea')
 if st.sidebar.button('Submit', key='feedback_submit'):
     save_feedback(feedback)
     st.sidebar.write('Thank you for your feedback!')
-
